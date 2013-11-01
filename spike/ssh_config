@@ -1,0 +1,19 @@
+NoHostAuthenticationForLocalhost yes
+
+ControlMaster auto 
+ControlPath ~/.ssh/master-%r@%h:%p
+
+IdentitiesOnly yes
+
+Host _host1
+	Hostname 10.0.0.1
+	IdentityFile ~/.ssh/id_rsa_host1
+
+Host _host2
+	Hostname 10.0.0.2
+
+Host _gateway1
+##octopuss: pass: ssh-password/myhost
+    Hostname 9.9.9.9
+    User myuser
+    Compression yes
