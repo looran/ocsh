@@ -24,6 +24,14 @@ ssh _host2 -o ProxyCommand="ssh _host1 -W %h:%p"
 ```
 
 ```bash
+# Connect to _host2, bouncing on _host0 and _host1
+op _host0 ^ _host1 ^ _host2
+# Equivalent SSH command:
+ssh _host2 -o ProxyCommand="ssh _host1 -W %h:%p -o ProxyCommand=\"ssh _host0 -W
+\%h:\%p\""
+```
+
+```bash
 # Connect to _host2, bouncing on different _host1 IP address
 op _host1(10.0.0.1) ^ _host2
 # Equivalent SSH command:
