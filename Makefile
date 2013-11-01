@@ -4,7 +4,7 @@ BINDIR=$(PREFIX)/bin
 all:
 
 install:
-	install -m 0755 octopuss.py $(BINDIR)/op
+	install -m 0755 octopshh.py $(BINDIR)/op
 
 tests:
-	python test_octopuss.py
+	python test_octopshh.py

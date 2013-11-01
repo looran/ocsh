@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-# Octopuss - SSH bouncing helper
+# Octopshh - SSH bouncing helper
 # 2013, Laurent Ghigonis <laurent@gouloum.fr>
 # 2013, Pierre-Olivier Vauboin
 
@@ -8,13 +8,13 @@ import os
 import re
 import sys
 
-class Octopuss(object):
+class Octopshh(object):
     def __init__(self, targets, debug=False, sshconf=None):
         self.debug = debug
         self.sshconf = sshconf if sshconf else Ssh_conf()
         self.targets = targets
         if self.debug:
-            print "octopuss: targets are %s" % self.targets
+            print "octopshh: targets are %s" % self.targets
 
     def connect(self):
         self._build_command()
@@ -105,7 +105,7 @@ class Ssh_host(object):
         for line in self.content:
             if len(line) == 0:
                 continue
-            g = re.match(r'[\t ]*##octopuss: (.*):(.*)$', line)
+            g = re.match(r'[\t ]*##octopshh: (.*):(.*)$', line)
             if g and len(g.groups()) == 2:
                 t, v = g.groups()
                 self.octo_options[t] = v
@@ -136,5 +136,5 @@ class Ssh_host(object):
         return s
 
 if __name__ == '__main__':
-    octo = Octopuss(sys.argv)
+    octo = Octopshh(sys.argv)
     octo.connect()
