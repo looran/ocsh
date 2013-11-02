@@ -22,11 +22,9 @@ class Octopshh(object):
 
     def _build_connect_command(self):
         cmd = ""
-        pos=0
+        level=0
         next_transport = "ssh"
-        targets = self.targets
-        targets.reverse()
-        for t in targets:
+        for t in self.targets:
             if t == "^":
                 next_transport = "ssh"
             else:
@@ -36,9 +34,15 @@ class Octopshh(object):
                     raise Exception("Invalid host %s" % t)
                 h, o = g.groups()
                 # Parse host options ()
-                # XXX IN PROGRESS
-                #cmd += 
-            pos += 1
+                if o:
+                    raise Exception("host options not implemented yet")
+                if level == 0:
+                    cmd += "%s %s" % (next_transport, h)
+                else:
+                    cmd += " -W %h:%p"
+                    cmd = "%s %s -o ProxyCommand=\"%s\"" % (
+                            next_transport, h, cmd.replace("\"", "\\\""))
+                level += 1
         self.connect_command = cmd
 
     def _connect():

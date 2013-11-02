@@ -44,10 +44,16 @@ class Octopshh_unittest(unittest.TestCase):
         o = Octopshh(["_host1", "^", "_host2"], sshconf=Ssh_conf(content=TEST_1_CONFIG))
         self.assertEquals(o.targets, expected_ssh_hosts)
 
-    @unittest.skip("IN PROGRESS")
     def test_build_connect_command(self):
         expected_connect_command = "ssh _host1"
         o = Octopshh(["_host1"], sshconf=Ssh_conf(content=TEST_1_CONFIG))
+        o._build_connect_command()
+        self.assertEquals(o.connect_command, expected_connect_command)
+
+    def test_build_connect_command_1hop(self):
+        expected_connect_command = 'ssh _host2 -o ProxyCommand="ssh _host1 -W %h:%p"'
+        o = Octopshh(["_host1", "^", "_host2"],
+                sshconf=Ssh_conf(content=TEST_1_CONFIG))
         o._build_connect_command()
         self.assertEquals(o.connect_command, expected_connect_command)
 
