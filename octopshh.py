@@ -17,7 +17,7 @@ class Octopshh(object):
             print "octopshh: targets are %s" % self.targets
 
     def connect(self):
-        self._build_command()
+        self._build_connect_command()
         self._connect()
 
     def _build_connect_command(self):
@@ -41,11 +41,12 @@ class Octopshh(object):
                 else:
                     cmd += " -W %h:%p"
                     cmd = "%s %s -o ProxyCommand=\"%s\"" % (
-                            next_transport, h, cmd.replace("\"", "\\\""))
+                            next_transport, h,
+                            cmd.replace("\"", "\\\""))
                 level += 1
         self.connect_command = cmd
 
-    def _connect():
+    def _connect(self):
         print self.connect_command
         os.system(self.connect_command)
 
@@ -140,5 +141,5 @@ class Ssh_host(object):
         return s
 
 if __name__ == '__main__':
-    octo = Octopshh(sys.argv)
+    octo = Octopshh(sys.argv[1:])
     octo.connect()
