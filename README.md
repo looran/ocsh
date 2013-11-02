@@ -64,6 +64,16 @@ ssh -o HostName=127.0.0.1 _host2 -o ProxyCommand="ssh _host1 -W 127.0.0.1:4141"
 ```
 
 ```bash
+# Connect to host2, bouncing on particular IP+port of _host1 and setting this
+as default behavior to connect to _host2
+op _host1 ^(def) _host2(127.0.0.1 4141)
+# Equivalent SSH command:
+ssh -o HostName=127.0.0.1 _host2 -o ProxyCommand="ssh _host1 -W 127.0.0.1:4141"
+# NOTE: Your ssh_config will get updated with "##octopshh: _host1^(def(:127.0.0.1 4141" in _host2
+# so next time when you connect to _host2, it will connect to _host1 first
+```
+
+```bash
 # Connect to host2, bouncing on normal _host1 IP+port
 op _host1 ^ _host2()
 # Equivalent SSH command:
