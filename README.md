@@ -1,6 +1,6 @@
 ## octossh - SSH password log-in and command automator
 
-octossh automates SSH password login and command execution through annotations on ssh_config(5) Hosts:
+octossh automates SSH password login and command execution through annotations on `ssh_config(5)` Hosts:
 * password authentication, reading password from pass[1]:
   * config:  `# ocsh pass <pass-name>`
   * command: `$ ocsh host`
