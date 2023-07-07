@@ -1,19 +1,22 @@
 ## octossh - SSH password log-in and command automator
 
 octossh automates SSH password login and command execution through annotations on ssh_config(5) Hosts:
-* password authentication, reading password from password-store[1]:
+* password authentication, reading password from pass[1]:
   * config:  `# ocsh pass <pass-name>`
   * command: `$ ocsh host`
 * post-login command execution:
   * config:  `# ocsh post <action> "<cmd>"`
   * command: `$ ocsh host[action]`
-* post-login command execution, providing additional password from password-store[1]:
+* post-login command execution, reading additional password from pass[1]:
   * config:  `# ocsh postpass <action> "<cmd>" <pass-name>`
   * command: `$ ocsh host[action]`
+
+[1] https://www.passwordstore.org/
 
 Compatibility with OpenSSH is kept as much as possible:
 * support usual SSH aliases, keys and command-line options
 * compatible with rsync, scp and other tools using SSH for transport, see example commands
+* autocompletion can be set-up with --ocsh-install-autocompletion
 
 ## Usage
 ```
