@@ -1,136 +1,86 @@
-## Octopshh - SSH bouncing helper
+## octossh - ssh password and command automator
 
-###### 2013, Laurent Ghigonis <laurent@gouloum.fr>
-###### 2013, Pierre-Olivier Vauboin
+octossh automates SSH password login and command execution through annotations on ssh_config(5) Hosts:
+* password authentication, reading password from password-store[1]:
+config:  `# ocsh pass <pass-name>`
+command: `$ ocsh host`
+* post-login command execution:
+config:  `# ocsh post <action> "<cmd>"`
+command: `$ ocsh host[action]`
+* post-login command execution, providing additional password from password-store[1]:
+config:  `# ocsh postpass <action> "<cmd>" <pass-name>`
+command: `$ ocsh host[action]`
 
-Connect through multiple hosts using ssh in one line, simplifying your ssh_config(5).
+Compatibility with OpenSSH is kept as much as possible:
+* support usual SSH aliases, keys and command-line options
+* compatible with rsync, scp and other tools using SSH for transport, see example commands
 
-Pronounce 'OctoPshii'
-
+## Usage
 ```
-WARNING:
-WORK IN PROGRESS - 20131101 laurent
-DO NOT EXPECT THIS TO WORK !!!
-```
+usage: ocsh.py [-h] [--ocsh-verbose] [--ocsh-pretend] [--ocsh-examples]
+               [--ocsh-install-autocompletion]
+               [destination] ...
 
-### Example usages
+octossh - ssh password and command automator
 
+positional arguments:
+  destination           host[action]
+  args                  any OpenSSH options or remote command
 
-```bash
-# Connect to _host2, bouncing on _host1 (_host1 and _host2 already in ssh_config)
-op _host1 ^ _host2
-# Equivalent SSH command:
-ssh _host2 -o ProxyCommand="ssh _host1 -W %h:%p"
-```
-
-```bash
-# Connect to _host2, bouncing on _host0 and _host1
-op _host0 ^ _host1 ^ _host2
-# Equivalent SSH command:
-ssh _host2 -o ProxyCommand="ssh _host1 -W %h:%p -o ProxyCommand=\"ssh _host0 -W
-\%h:\%p\""
-```
-
-```bash
-# Connect to _host2, bouncing on different _host1 IP address
-op _host1(10.0.0.1) ^ _host2
-# Equivalent SSH command:
-ssh -o ProxyCommand="ssh _host1 -W %h:%p"
+options:
+  -h, --help            show this help message and exit
+  --ocsh-verbose        enable debug messages
+  --ocsh-pretend        do not actually perform the connection
+  --ocsh-examples       show example octossh configuration and commands
+  --ocsh-install-autocompletion
+                        install bash autocompletion for the current user
 ```
 
-```bash
-# Connect to _host2, bouncing on different _host1 IP address + login + pass
-op _host1(laurent:pass-sshpass/host1@10.0.0.1) ^ _host2
-# Equivalent SSH command:
-ssh _host2 -o ProxyCommand="ssh -o User=laurent -o PasswordAuthentication=yes _host1 -W %h:%p"
-# NOTE: "pexpect" will be used to give the password to SSH from "pass"
+## Installation
+
+```
+pip install octossh
 ```
 
-```bash
-# Connect to host2, bouncing on particular IP+port of _host1
-op _host1 ^ _host2(127.0.0.1 4141)
-# Equivalent SSH command:
-ssh -o HostName=127.0.0.1 _host2 -o ProxyCommand="ssh _host1 -W 127.0.0.1:4141"
+## Examples of usage
+```
+# connect to SSH alias 'host1' with automated password login
+# ssh_config(5)
+Host host1
+   Hostname 10.0.0.1
+   User minou
+   # ocsh pass pass-location                 # location in password-store
+# command
+ocsh host1
+# equivalent ssh command
+sshpass -p "$(pass pass-location)" ssh host1
+
+# connect to SSH alias 'host2' with automated password login, going through the above 'host1', and become root
+# ssh_config(5)
+Host host2
+    Host 10.9.0.1
+    User root
+    # ocsh pass pass-location2               # location in password-store
+    # ocsh postpass su "su -l" pass-location3
+    # ocsh post nsep "ip netns exec nsep"    # post-login command to enter a network namespace
+# command
+ocsh host2[root]
+# equivalent ssh command
+sshpass -p "$(pass pass-location2)" ssh -oProxyCommand="sshpass -p "$(pass pass-location1)" ssh host1" host2 su -l
+<now enter root password (from pass-location3) manually>
+
+# run rsync through octossh from host1 with automated password login
+rsync -e "ocsh" -avP host1:/etc/hosts /tmp/
+
+# run scp through octossh from host1 with automated password login
+scp -S "ocsh" host1:/etc/hosts /tmp/
 ```
 
-```bash
-# Connect to host2, bouncing on particular IP+port of _host1 and setting this as
-# default behavior when comming from _host1
-op _host1 ^ _host2(127.0.0.1 4141 def)
-# Equivalent SSH command:
-ssh -o HostName=127.0.0.1 _host2 -o ProxyCommand="ssh _host1 -W 127.0.0.1:4141"
-# NOTE: Your ssh_config will get updated with "##octopshh: _host1^:127.0.0.1 4141" in _host2
-# so next time when you come from _host1 it will be the default
-```
+## See also
 
-```bash
-# Connect to host2, bouncing on particular IP+port of _host1 and setting this
-as default behavior to connect to _host2
-op _host1 ^(def) _host2(127.0.0.1 4141)
-# Equivalent SSH command:
-ssh -o HostName=127.0.0.1 _host2 -o ProxyCommand="ssh _host1 -W 127.0.0.1:4141"
-# NOTE: Your ssh_config will get updated with "##octopshh: _host1^(def(:127.0.0.1 4141" in _host2
-# so next time when you connect to _host2, it will connect to _host1 first
-```
-
-```bash
-# Connect to host2, bouncing on normal _host1 IP+port
-op _host1 ^ _host2()
-# Equivalent SSH command:
-ssh _host2 -o ProxyCommand="ssh _host1 -W %h:%p"
-```
-
-
-### ssh_config auto update
-
-New host: host(IP [port])
-Everytime a commandline configuration is specified with () for connecting to
-a host, and host does not exist in ssh_config, it will be automaticaly added
-by Octopshh.
-
-New default: host(IP [port] def)
-If the host exists in ssh_config, and the keyword 'def' is used in the
-commandline configuration using (), ssh_config will be updated
-
-
-### Octopshh special options in ssh_config
-
-```bash
-Host _host2
-    ##octopshh: pass:ssh-password/myhost
-    ##octopshh: _host1^:127.0.0.1 4141
-```
-
-
-## TODO
-
-### TODO: Using directly the SSH command
-
-Pros:
-* possible more readable
-* can echo the command to connect without Octopshh
-
-Cons:
-* manual redo of sshkey decrypt / ssh-agent
-* manual tunnels
-
-### TODO: Support for mosh
-
-Connect to _host2, bouncing on _host1 and using mosh between _host1 and _host2
-op _host1 ^^ _host2
-
-Starts mosh-server on _host2, and mosh-client on _host1.
-Normal SSH is used to _host1
-Of course 
-
-Bounce by _host0
-op _host0 ^ _host1 ^^ _host2
-
-Use mosh for the first hop
-op && _host0 ^ _host1 ^ _host2
-
-Ressources
-http://samy.pl/pwnat/
-https://github.com/keithw/mosh/issues/285
-udp inside tcp tunnel: http://www.cs.columbia.edu/~lennox/udptunnel/
-
+* netmiko - python library to SSH to various network devices
+  https://github.com/ktbyers/netmiko
+* sshpass - automate SSH password-based log-in
+  https://github.com/kevinburke/sshpass
+* passh - sshpass alternative to automate SSH password-based log-in
+  https://github.com/clarkwang/passh

@@ -1,0 +1,27 @@
+[build-system]
+#requires = ["setuptools", "pexpect"]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "octossh"
+authors = [ {name = "Laurent Ghigonis", email = "ooookiwi@gmail.com"}, ]
+description = "SSH bouncer"
+readme = "README.md"
+requires-python = ">=3.0"
+keywords = ["ssh", "bouncer", "pass"]
+license = {text = "BSD-3-Clause"}
+dependencies = [
+    "pexpect",
+    'importlib-metadata; python_version<"3.8"',
+]
+dynamic = ["version"]
+
+[project.scripts]
+ocsh = "ocsh:main"
+
+[tool.setuptools.dynamic]
+version = {attr = "ocsh.VERSION"}
+
+[project.urls]
+"Homepage" = "https://github.com/looran/octossh"
