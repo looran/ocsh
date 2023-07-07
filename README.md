@@ -2,14 +2,14 @@
 
 octossh automates SSH password login and command execution through annotations on ssh_config(5) Hosts:
 * password authentication, reading password from password-store[1]:
-config:  `# ocsh pass <pass-name>`
-command: `$ ocsh host`
+  * config:  `# ocsh pass <pass-name>`
+  * command: `$ ocsh host`
 * post-login command execution:
-config:  `# ocsh post <action> "<cmd>"`
-command: `$ ocsh host[action]`
+  * config:  `# ocsh post <action> "<cmd>"`
+  * command: `$ ocsh host[action]`
 * post-login command execution, providing additional password from password-store[1]:
-config:  `# ocsh postpass <action> "<cmd>" <pass-name>`
-command: `$ ocsh host[action]`
+  * config:  `# ocsh postpass <action> "<cmd>" <pass-name>`
+  * command: `$ ocsh host[action]`
 
 Compatibility with OpenSSH is kept as much as possible:
 * support usual SSH aliases, keys and command-line options
