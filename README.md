@@ -1,4 +1,4 @@
-## octossh - ssh password and command automator
+## octossh - SSH password log-in and command automator
 
 octossh automates SSH password login and command execution through annotations on ssh_config(5) Hosts:
 * password authentication, reading password from password-store[1]:
@@ -21,7 +21,7 @@ usage: ocsh.py [-h] [--ocsh-verbose] [--ocsh-pretend] [--ocsh-examples]
                [--ocsh-install-autocompletion]
                [destination] ...
 
-octossh - ssh password and command automator
+octossh - SSH password log-in and command automator
 
 positional arguments:
   destination           host[action]

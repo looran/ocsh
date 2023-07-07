@@ -6,7 +6,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "octossh"
 authors = [ {name = "Laurent Ghigonis", email = "ooookiwi@gmail.com"}, ]
-description = "SSH bouncer"
+description = "SSH password log-in and command automator"
 readme = "README.md"
 requires-python = ">=3.0"
 keywords = ["ssh", "bouncer", "pass"]

@@ -3,7 +3,7 @@
 # 2013, 2023 Laurent Ghigonis <ooookiwi@gmail.com>
 # 2013, Pierre-Olivier Vauboin
 
-DESCRIPTION = "octossh - ssh password and command automator"
+DESCRIPTION = "octossh - SSH password log-in and command automator"
 VERSION = "20230707"
 SUMMARY = """octossh automates SSH password login and command execution through annotations on ssh_config(5) Hosts:
 * password authentication, reading password from password-store[1]:
