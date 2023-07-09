@@ -5,7 +5,7 @@
 
 DESCRIPTION = "octossh - SSH password log-in and command automator"
 VERSION = "20230707"
-SUMMARY = """octossh automates SSH password login and command execution through annotations on `ssh_config(5)` Hosts:
+SUMMARY = f"""octossh automates SSH password login and command execution through annotations on `ssh_config(5)` Hosts:
 * password authentication, reading password from pass[1]:
   * config:  `# ocsh pass <pass-name>`
   * command: `$ ocsh host`
@@ -23,6 +23,7 @@ Compatibility with OpenSSH is kept as much as possible:
 * compatible with rsync, scp and other tools using SSH for transport, see example commands
 * autocompletion can be set-up with --ocsh-install-autocompletion
 
+v{VERSION}
 See also --ocsh-examples
 """
 EXAMPLES = """# connect to SSH alias 'host1' with automated password login

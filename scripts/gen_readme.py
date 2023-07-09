@@ -42,7 +42,7 @@ pip install octossh
 * passh - sshpass alternative to automate SSH password-based log-in
   https://github.com/clarkwang/passh
 """.format(desc=ocsh.DESCRIPTION,
-    summary=ocsh.SUMMARY.split("\n\nSee also")[0],
+    summary=ocsh.SUMMARY.split("\n\nv2")[0],
     usage=usage.split("\n\noctossh automates SSH")[0],
     examples=ocsh.EXAMPLES)
 
