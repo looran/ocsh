@@ -4,7 +4,7 @@
 # 2013, Pierre-Olivier Vauboin
 
 DESCRIPTION = "octossh - SSH password log-in and command automator"
-VERSION = "20230707"
+VERSION = "20230711-2"
 SUMMARY = f"""octossh automates SSH password login and command execution through annotations on `ssh_config(5)` Hosts:
 * password authentication, reading password from pass[1]:
   * config:  `# ocsh pass <pass-name>`
@@ -151,7 +151,7 @@ class Octossh(object):
         if self.conf.conf_path:
             self.prog += " -F %s" % self.conf.conf_path
 
-        ssh_cmd, ssh_target, post, password = self._get_target_cmd(destination)
+        ssh_cmd, ssh_target, post, passname = self._get_target_cmd(destination)
 
         # construct imbricated proxycommand SSH commands for all target
         if jumphosts:
@@ -178,13 +178,17 @@ class Octossh(object):
 
         self.ssh_command = "{} {}".format(ssh_cmd, ssh_target)
         self.post = post
-        self.password = password
+        self.passname = passname
 
     def run(self):
-        debug("running: %s" % self.ssh_command)
         ssh_command = self.ssh_command
-        if self.password:
-            ssh_command = ssh_command.replace("_PASSWORD_", self.password)
+        if self.passname:
+            if shutil.which('pass') is None:
+                raise self._err("you must install 'pass', see https://www.passwordstore.org/")
+            if shutil.which('sshpass') is None:
+                raise self._err("you must install 'sshpass'")
+            ssh_command = "sshpass -p \"$(pass {})\" {} ".format(self.passname, ssh_command)
+        debug("running: %s" % ssh_command)
 
         if len(self.post.keys()) > 0:
             if not os.isatty(sys.stdout.fileno()):
@@ -231,14 +235,9 @@ class Octossh(object):
         ssh_cmd = "ssh -v"
         if self.conf.conf_path:
             ssh_cmd += " -F %s" % self.conf.conf_path
-        password = None
+        passname = None
         if 'pass' in conf:
-            if shutil.which('pass') is None:
-                raise self._err("you must install 'pass', see https://www.passwordstore.org/")
-            if shutil.which('sshpass') is None:
-                raise self._err("you must install 'sshpass'")
-            password = subprocess.run(["pass", conf['pass']], capture_output=True).stdout.decode().strip()
-            ssh_cmd = "sshpass -p '_PASSWORD_' " + ssh_cmd
+            passname = conf['pass']
         if 'ProxyJump' in conf:
             # if ProxyJump in ssh_config(5), replace with ocsh
             ssh_cmd += ' -o ProxyCommand="{} -W %h:%p {}" -o ProxyJump=None'.format(self.prog, conf['ProxyJump'])
@@ -248,7 +247,7 @@ class Octossh(object):
             if pcmd[0].endswith('ssh'):
                 ssh_cmd += ' -o ProxyCommand="{} {}"'.format(self.prog, ' '.join(pcmd[1:]))
 
-        return ssh_cmd, target, post, password
+        return ssh_cmd, target, post, passname
 
     def _err(self, msg):
         error("error: %s" % msg)
