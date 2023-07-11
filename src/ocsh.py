@@ -147,7 +147,7 @@ class Octossh(object):
         if shutil.which('ssh') is None:
             raise self._err("you must install 'ssh'")
         self.conf = conf
-        self.prog = str(Path(__file__))
+        self.prog = str(Path(sys.argv[0]))
         if self.conf.conf_path:
             self.prog += " -F %s" % self.conf.conf_path
 
