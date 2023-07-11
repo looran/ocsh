@@ -174,7 +174,7 @@ class Octossh(object):
             #        cmd = "{} {}".format(ssh_cmd, ssh_target)
 
         if args:
-            ssh_cmd = ssh_cmd + ' ' + ' '.join(args)
+            ssh_cmd = ssh_cmd + ' ' + args
 
         self.ssh_command = "{} {}".format(ssh_cmd, ssh_target)
         self.post = post
@@ -257,7 +257,8 @@ class Octossh(object):
 def main():
     parser = argparse.ArgumentParser(description=DESCRIPTION, epilog=SUMMARY, formatter_class=argparse.RawTextHelpFormatter)
     parser.add_argument('-F', '--ssh-config', default=Sshconf.CONFPATH_DEFAULT, help=argparse.SUPPRESS)
-    parser.add_argument('-J', '--jump-host', help=argparse.SUPPRESS)
+    parser.add_argument('-W', '--ssh-port-fw', help=argparse.SUPPRESS)
+    parser.add_argument('-J', '--ssh-jump-host', help=argparse.SUPPRESS)
     parser.add_argument('--ocsh-verbose', action='store_const', dest="loglevel", const=logging.DEBUG, default=logging.INFO, help="enable debug messages")
     parser.add_argument('--ocsh-pretend', action='store_true', help="do not actually perform the connection")
     parser.add_argument('--ocsh-examples', action='store_true', help="show example octossh configuration and commands")
@@ -269,6 +270,11 @@ def main():
     if args.ocsh_examples:
         print("octossh examples:\n\n"+EXAMPLES)
         exit()
+
+    # XXX TODO create a custom parser that would pass ssh-* arguments more smoothly. Need our parser to know all SSH arguments.
+    ssh_args = ' '.join(args.args)
+    if args.ssh_port_fw:
+        ssh_args += "-W {}".format(args.ssh_port_fw)
 
     if args.ocsh_install_autocompletion:
         f = Path.home() / ".bash_completion"
@@ -291,7 +297,7 @@ def main():
     logging.basicConfig(level=args.loglevel, format='ocsh: %(message)s')
 
     c = Sshconf(Path(args.ssh_config))
-    o = Octossh(c, args.destination, args.jump_host, args.args, ssh_options)
+    o = Octossh(c, args.destination, args.ssh_jump_host, ssh_args, ssh_options)
     if not args.ocsh_pretend:
         o.run()
 
