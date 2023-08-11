@@ -4,7 +4,7 @@
 # 2013, Pierre-Olivier Vauboin
 
 DESCRIPTION = "ocsh - SSH password log-in and command automator"
-VERSION = "20230811-2"
+VERSION = "20230811-3"
 SUMMARY = f"""ocsh automates SSH password login and command execution through annotations on `ssh_config(5)` Hosts:
 * password authentication, reading password from pass[1]:
   - config:  `# ocsh pass <pass-name>`
@@ -192,10 +192,15 @@ class Octossh(object):
 
             debug("checking if target server public key is in ssh known_hosts")
             hostname = subprocess.run(f"ssh -G {self.ssh_target} |grep '^hostname ' |cut -d' ' -f2", shell=True, capture_output=True).stdout.decode().strip()
-            check_res = subprocess.run(["ssh-keygen", "-l", "-F", hostname])
+            check_res = subprocess.run(["ssh-keygen", "-l", "-F", hostname], capture_output=True)
             if check_res.returncode == 1:
-                debug("add target server public key to ssh known_hosts: %s" % hostname)
-                subprocess.run(f"ssh-keyscan {hostname} >> ~/.ssh/known_hosts", shell=True)
+                info("adding target server public key to ssh known_hosts")
+                fingerprints = subprocess.run(f"ssh-keyscan {hostname}", shell=True, capture_output=True).stdout.decode().strip()
+                info("Fingerprints:\n%s" % fingerprints)
+                if input("Are you sure you want to continue connecting (yes/no)? ") != "yes":
+                    return
+                with (Path.home() / ".ssh/known_hosts").open("a") as f:
+                    f.write(fingerprints+"\n")
 
         debug("running: %s" % ssh_command)
 
