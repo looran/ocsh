@@ -176,6 +176,7 @@ class Octossh(object):
         if args:
             ssh_cmd = ssh_cmd + ' ' + args
 
+        self.ssh_target = ssh_target
         self.ssh_command = "{} {}".format(ssh_cmd, ssh_target)
         self.post = post
         self.passname = passname
@@ -188,6 +189,14 @@ class Octossh(object):
             if shutil.which('sshpass') is None:
                 raise self._err("you must install 'sshpass'")
             ssh_command = "sshpass -p \"$(pass {})\" {} ".format(self.passname, ssh_command)
+
+            debug("checking if target server public key is in ssh known_hosts")
+            hostname = subprocess.run(f"ssh -G {self.ssh_target} |grep '^hostname ' |cut -d' ' -f2", shell=True, capture_output=True).stdout.decode().strip()
+            check_res = subprocess.run(["ssh-keygen", "-l", "-F", hostname])
+            if check_res.returncode == 1:
+                debug("add target server public key to ssh known_hosts: %s" % hostname)
+                subprocess.run(f"ssh-keyscan {hostname} >> ~/.ssh/known_hosts", shell=True)
+
         debug("running: %s" % ssh_command)
 
         if len(self.post.keys()) > 0:
