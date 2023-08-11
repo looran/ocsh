@@ -4,7 +4,7 @@ requires = ["setuptools"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "octossh"
+name = "ocsh"
 authors = [ {name = "Laurent Ghigonis", email = "ooookiwi@gmail.com"}, ]
 description = "SSH password log-in and command automator"
 readme = "README.md"
@@ -24,4 +24,4 @@ ocsh = "ocsh:main"
 version = {attr = "ocsh.VERSION"}
 
 [project.urls]
-"Homepage" = "https://github.com/looran/octossh"
+"Homepage" = "https://github.com/looran/ocsh"

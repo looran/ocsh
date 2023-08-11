@@ -1,15 +1,15 @@
-## octossh - SSH password log-in and command automator
+## ocsh - SSH password log-in and command automator
 
-octossh automates SSH password login and command execution through annotations on `ssh_config(5)` Hosts:
+ocsh automates SSH password login and command execution through annotations on `ssh_config(5)` Hosts:
 * password authentication, reading password from pass[1]:
-  * config:  `# ocsh pass <pass-name>`
-  * command: `$ ocsh host`
+  - config:  `# ocsh pass <pass-name>`
+  - command: `$ ocsh host`
 * post-login command execution:
-  * config:  `# ocsh post <action> "<cmd>"`
-  * command: `$ ocsh host[action]`
+  - config:  `# ocsh post <action> "<cmd>"`
+  - command: `$ ocsh host[action]`
 * post-login command execution, reading additional password from pass[1]:
-  * config:  `# ocsh postpass <action> "<cmd>" <pass-name>`
-  * command: `$ ocsh host[action]`
+  - config:  `# ocsh postpass <action> "<cmd>" <pass-name>`
+  - command: `$ ocsh host[action]`
 
 [1] https://www.passwordstore.org/
 
@@ -24,7 +24,7 @@ usage: ocsh.py [-h] [--ocsh-verbose] [--ocsh-pretend] [--ocsh-examples]
                [--ocsh-install-autocompletion]
                [destination] ...
 
-octossh - SSH password log-in and command automator
+ocsh - SSH password log-in and command automator
 
 positional arguments:
   destination           host[action]
@@ -34,7 +34,7 @@ options:
   -h, --help            show this help message and exit
   --ocsh-verbose        enable debug messages
   --ocsh-pretend        do not actually perform the connection
-  --ocsh-examples       show example octossh configuration and commands
+  --ocsh-examples       show example ocsh configuration and commands
   --ocsh-install-autocompletion
                         install bash autocompletion for the current user
 ```
@@ -42,7 +42,7 @@ options:
 ## Installation
 
 ```
-pip install octossh
+pip install ocsh
 ```
 
 ## Examples of usage
@@ -72,10 +72,10 @@ ocsh host2[root]
 sshpass -p "$(pass pass-location2)" ssh -oProxyCommand="sshpass -p "$(pass pass-location1)" ssh host1" host2 su -l
 <now enter root password (from pass-location3) manually>
 
-# run rsync through octossh from host1 with automated password login
+# run rsync through ocsh from host1 with automated password login
 rsync -e "ocsh" -avP host1:/etc/hosts /tmp/
 
-# run scp through octossh from host1 with automated password login
+# run scp through ocsh from host1 with automated password login
 scp -S "ocsh" host1:/etc/hosts /tmp/
 ```
 

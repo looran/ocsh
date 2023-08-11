@@ -25,7 +25,7 @@ readme = """## {desc}
 ## Installation
 
 ```
-pip install octossh
+pip install ocsh
 ```
 
 ## Examples of usage
@@ -43,7 +43,7 @@ pip install octossh
   https://github.com/clarkwang/passh
 """.format(desc=ocsh.DESCRIPTION,
     summary=ocsh.SUMMARY.split("\n\nv2")[0],
-    usage=usage.split("\n\noctossh automates SSH")[0],
+    usage=usage.split("\n\nocsh automates SSH")[0],
     examples=ocsh.EXAMPLES)
 
 file.write_text(readme)

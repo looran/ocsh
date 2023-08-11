@@ -3,18 +3,18 @@
 # 2013, 2023 Laurent Ghigonis <ooookiwi@gmail.com>
 # 2013, Pierre-Olivier Vauboin
 
-DESCRIPTION = "octossh - SSH password log-in and command automator"
-VERSION = "20230711-2"
-SUMMARY = f"""octossh automates SSH password login and command execution through annotations on `ssh_config(5)` Hosts:
+DESCRIPTION = "ocsh - SSH password log-in and command automator"
+VERSION = "20230811"
+SUMMARY = f"""ocsh automates SSH password login and command execution through annotations on `ssh_config(5)` Hosts:
 * password authentication, reading password from pass[1]:
-  * config:  `# ocsh pass <pass-name>`
-  * command: `$ ocsh host`
+  - config:  `# ocsh pass <pass-name>`
+  - command: `$ ocsh host`
 * post-login command execution:
-  * config:  `# ocsh post <action> "<cmd>"`
-  * command: `$ ocsh host[action]`
+  - config:  `# ocsh post <action> "<cmd>"`
+  - command: `$ ocsh host[action]`
 * post-login command execution, reading additional password from pass[1]:
-  * config:  `# ocsh postpass <action> "<cmd>" <pass-name>`
-  * command: `$ ocsh host[action]`
+  - config:  `# ocsh postpass <action> "<cmd>" <pass-name>`
+  - command: `$ ocsh host[action]`
 
 [1] https://www.passwordstore.org/
 
@@ -51,10 +51,10 @@ ocsh host2[root]
 sshpass -p "$(pass pass-location2)" ssh -oProxyCommand="sshpass -p "$(pass pass-location1)" ssh host1" host2 su -l
 <now enter root password (from pass-location3) manually>
 
-# run rsync through octossh from host1 with automated password login
+# run rsync through ocsh from host1 with automated password login
 rsync -e "ocsh" -avP host1:/etc/hosts /tmp/
 
-# run scp through octossh from host1 with automated password login
+# run scp through ocsh from host1 with automated password login
 scp -S "ocsh" host1:/etc/hosts /tmp/"""
 
 import os
@@ -232,7 +232,9 @@ class Octossh(object):
                         raise self._err("invalid action '%s' for host '%s'" % (action, usr['host']))
                 
         # construct command to reach target
-        ssh_cmd = "ssh -v"
+        ssh_cmd = "ssh"
+        if logging.root.level == logging.DEBUG:
+            ssh_cmd += " -v"
         if self.conf.conf_path:
             ssh_cmd += " -F %s" % self.conf.conf_path
         passname = None
@@ -260,14 +262,14 @@ def main():
     parser.add_argument('-J', '--ssh-jump-host', help=argparse.SUPPRESS)
     parser.add_argument('--ocsh-verbose', action='store_const', dest="loglevel", const=logging.DEBUG, default=logging.INFO, help="enable debug messages")
     parser.add_argument('--ocsh-pretend', action='store_true', help="do not actually perform the connection")
-    parser.add_argument('--ocsh-examples', action='store_true', help="show example octossh configuration and commands")
+    parser.add_argument('--ocsh-examples', action='store_true', help="show example ocsh configuration and commands")
     parser.add_argument('--ocsh-install-autocompletion', action='store_true', help="install bash autocompletion for the current user")
     parser.add_argument('destination', nargs='?', help='host[action]')
     parser.add_argument('args', nargs=argparse.REMAINDER, help='any OpenSSH options or remote command')
     args, ssh_options = parser.parse_known_args()
 
     if args.ocsh_examples:
-        print("octossh examples:\n\n"+EXAMPLES)
+        print("ocsh examples:\n\n"+EXAMPLES)
         exit()
 
     # XXX TODO create a custom parser that would pass ssh-* arguments more smoothly. Need our parser to know all SSH arguments.
