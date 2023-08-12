@@ -10,6 +10,10 @@ ocsh automates SSH password login and command execution through annotations on `
 * post-login command execution, reading additional password from pass[1]:
   - config:  `# ocsh postpass <action> "<cmd>" <pass-name>`
   - command: `$ ocsh host[action]`
+* use different ssh command or prefix by other command:
+  - config:  `# ocsh cmd "<ssh-command>"`
+  - config:  `# ocsh pre "<pre-command>"`
+  - command: `$ ocsh host`
 
 [1] https://www.passwordstore.org/
 
@@ -71,6 +75,17 @@ ocsh host2[root]
 # equivalent ssh command
 sshpass -p "$(pass pass-location2)" ssh -oProxyCommand="sshpass -p "$(pass pass-location1)" ssh host1" host2 su -l
 <now enter root password (from pass-location3) manually>
+
+# run ssh connection from a different namespace
+# ssh_config(5)
+Host host1
+   Hostname 10.0.0.1
+   User minou
+   # ocsh pre "ip netns exec toto"
+# command
+ocsh host1
+# equivalent command
+ip netns exec ssh host1
 
 # run rsync through ocsh from host1 with automated password login
 rsync -e "ocsh" -avP host1:/etc/hosts /tmp/

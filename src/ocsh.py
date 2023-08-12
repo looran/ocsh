@@ -15,6 +15,10 @@ SUMMARY = f"""ocsh automates SSH password login and command execution through an
 * post-login command execution, reading additional password from pass[1]:
   - config:  `# ocsh postpass <action> "<cmd>" <pass-name>`
   - command: `$ ocsh host[action]`
+* use different ssh command or prefix by other command:
+  - config:  `# ocsh cmd "<ssh-command>"`
+  - config:  `# ocsh pre "<pre-command>"`
+  - command: `$ ocsh host`
 
 [1] https://www.passwordstore.org/
 
@@ -50,6 +54,17 @@ ocsh host2[root]
 # equivalent ssh command
 sshpass -p "$(pass pass-location2)" ssh -oProxyCommand="sshpass -p "$(pass pass-location1)" ssh host1" host2 su -l
 <now enter root password (from pass-location3) manually>
+
+# run ssh connection from a different namespace
+# ssh_config(5)
+Host host1
+   Hostname 10.0.0.1
+   User minou
+   # ocsh pre "ip netns exec toto"
+# command
+ocsh host1
+# equivalent command
+ip netns exec ssh host1
 
 # run rsync through ocsh from host1 with automated password login
 rsync -e "ocsh" -avP host1:/etc/hosts /tmp/
@@ -96,6 +111,14 @@ class Sshconf(object):
                         if m:
                             self.main['pass-executable'] = m['pass-cmd']
                             continue
+                    m = re.match(r"ocsh(?:\s*=\s*|\s+)cmd(?:\s*=\s*|\s+)(?P<cmd>.+)", cline)
+                    if m:
+                        self.hosts[current]['cmd'] = m['cmd']
+                        continue
+                    m = re.match(r"ocsh(?:\s*=\s*|\s+)pre(?:\s*=\s*|\s+)(?P<pre>.+)", cline)
+                    if m:
+                        self.hosts[current]['pre'] = m['pre']
+                        continue
                     m = re.match(r"ocsh(?:\s*=\s*|\s+)pass(?:\s*=\s*|\s+)(?P<passname>.+)", cline)
                     if m:
                         self.hosts[current]['pass'] = m['passname']
@@ -266,7 +289,10 @@ class Octossh(object):
                         raise self._err("invalid action '%s' for host '%s'" % (action, usr['host']))
                 
         # construct command to reach target
-        ssh_cmd = "ssh"
+        if 'cmd' in conf:
+            ssh_cmd = conf['cmd']
+        else:
+            ssh_cmd = "ssh"
         if logging.root.level == logging.DEBUG:
             ssh_cmd += " -v"
         if self.conf.conf_path:
