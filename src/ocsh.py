@@ -224,6 +224,7 @@ class Octossh(object):
             p = pexpect.spawn(ssh_command)
             for action in self.post.keys():
                 cmd, passname = self.post[action]
+                debug("post action : %s" % cmd)
                 p.sendline(cmd)
                 if passname:
                     try:
