@@ -62,6 +62,7 @@ import re
 import sys
 import shutil
 import logging
+import tempfile
 import argparse
 import subprocess
 from pathlib import Path
@@ -151,7 +152,7 @@ class Octossh(object):
         if self.conf.conf_path:
             self.prog += " -F %s" % self.conf.conf_path
 
-        ssh_cmd, ssh_target, post, passname = self._get_target_cmd(destination)
+        ssh_cmd, ssh_target, post, conf = self._get_target_cmd(destination)
 
         # construct imbricated proxycommand SSH commands for all target
         if jumphosts:
@@ -179,16 +180,16 @@ class Octossh(object):
         self.ssh_target = ssh_target
         self.ssh_command = "{} {}".format(ssh_cmd, ssh_target)
         self.post = post
-        self.passname = passname
+        self.conf = conf
 
     def run(self):
         ssh_command = self.ssh_command
-        if self.passname:
+        fpass = None
+        if 'pass' in self.conf:
             if shutil.which('pass') is None:
                 raise self._err("you must install 'pass', see https://www.passwordstore.org/")
             if shutil.which('sshpass') is None:
                 raise self._err("you must install 'sshpass'")
-            ssh_command = "sshpass -p \"$(pass {})\" {} ".format(self.passname, ssh_command)
 
             debug("checking if target server public key is in ssh known_hosts")
             hostname = subprocess.run(f"ssh -G {self.ssh_target} |grep '^hostname ' |cut -d' ' -f2", shell=True, capture_output=True).stdout.decode().strip()
@@ -201,6 +202,19 @@ class Octossh(object):
                     return
                 with (Path.home() / ".ssh/known_hosts").open("a") as f:
                     f.write(fingerprints+"\n")
+
+            debug("setting-up sshpass using named pipe")
+            password = subprocess.run(["pass", self.conf['pass']], capture_output=True).stdout.strip()
+            fpass = Path(tempfile.mkdtemp()) / "fifo"
+            os.mkfifo(fpass)
+            fr = os.open(fpass, os.O_RDONLY | os.O_NONBLOCK)
+            fw = os.open(fpass, os.O_WRONLY)
+            os.write(fw, password)
+            os.write(fw, b'\n')
+            ssh_command = "sshpass -f{} {} ".format(fpass, ssh_command)
+
+        if 'pre' in self.conf:
+            ssh_command = self.conf['pre'] + " " + ssh_command
 
         debug("running: %s" % ssh_command)
 
@@ -228,6 +242,11 @@ class Octossh(object):
         else:
             subprocess.run(ssh_command, shell=True)
 
+        if fpass:
+            debug("removing password fifo %s" % fpass)
+            fpass.unlink()
+            fpass.parent.rmdir()
+
     def _get_target_cmd(self, target):
         # read user provided target and options
         usr = re.match(r"((?P<user>\w+)@)?(?P<host>\w+)(\[(?P<post>.*)\])?", target).groupdict()
@@ -251,9 +270,6 @@ class Octossh(object):
             ssh_cmd += " -v"
         if self.conf.conf_path:
             ssh_cmd += " -F %s" % self.conf.conf_path
-        passname = None
-        if 'pass' in conf:
-            passname = conf['pass']
         if 'ProxyJump' in conf:
             # if ProxyJump in ssh_config(5), replace with ocsh
             ssh_cmd += ' -o ProxyCommand="{} -W %h:%p {}" -o ProxyJump=None'.format(self.prog, conf['ProxyJump'])
@@ -263,7 +279,7 @@ class Octossh(object):
             if pcmd[0].endswith('ssh'):
                 ssh_cmd += ' -o ProxyCommand="{} {}"'.format(self.prog, ' '.join(pcmd[1:]))
 
-        return ssh_cmd, target, post, passname
+        return ssh_cmd, target, post, conf
 
     def _err(self, msg):
         error("error: %s" % msg)
