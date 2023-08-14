@@ -91,11 +91,14 @@ class Sshconf(object):
 
     def __init__(self, conf_path):
         self.conf_path = conf_path
-        if not conf_path.exists():
-            return None
-
         self.main = dict()
         self.hosts = dict()
+        self._load(conf_path)
+
+    def _load(self, conf_path):
+        if not conf_path.exists():
+            return
+
         current = "main"
         for numline, line in enumerate(conf_path.read_text().split("\n")):
             line = line.strip()
@@ -146,7 +149,9 @@ class Sshconf(object):
                     current = m['arg']
                     self.hosts[current] = defaultdict(dict)
                 else:
-                    if current == "main":
+                    if m['option'] == "Include":
+                        self._load(Path(m['arg']))
+                    elif current == "main":
                         self.main[m['option']] = m['arg']
                     else:
                         self.hosts[current][m['option']] = m['arg']
