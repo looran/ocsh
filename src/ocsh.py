@@ -4,7 +4,7 @@
 # 2013, Pierre-Olivier Vauboin
 
 DESCRIPTION = "ocsh - SSH password log-in and command automator"
-VERSION = "20230811-3"
+VERSION = "20230814"
 SUMMARY = f"""ocsh automates SSH password login and command execution through annotations on `ssh_config(5)` Hosts:
 * password authentication, reading password from pass[1]:
   - config:  `# ocsh pass <pass-name>`
@@ -233,6 +233,8 @@ class Octossh(object):
 
             debug("setting-up sshpass using named pipe")
             password = subprocess.run(["pass", self.conf['pass']], capture_output=True).stdout.strip()
+            if len(password) == 0:
+                self._err("pass: password not found for host %s : %s" % (self.ssh_target, self.conf['pass']))
             fpass = Path(tempfile.mkdtemp()) / "fifo"
             os.mkfifo(fpass)
             fr = os.open(fpass, os.O_RDONLY | os.O_NONBLOCK)
@@ -262,6 +264,8 @@ class Octossh(object):
                     if shutil.which('pass') is None:
                         raise self._err("you must install 'pass', see https://www.passwordstore.org/")
                     password = subprocess.run(["pass", passname], capture_output=True).stdout.decode().strip()
+                    if len(password) == 0:
+                        self._err("pass: password not found for host %s, post action %s : %s" % (self.ssh_target, cmd, passname))
                     try:
                         p.expect("[Pp]assword[^:]*:", timeout=5)
                     except Exception as e:
