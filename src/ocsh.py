@@ -172,6 +172,20 @@ class Octossh(object):
 } && complete -F _ocsh -o nospace ocsh
 """
 
+    @classmethod
+    def install_bash_completion(cls):
+        f = Path.home() / ".bash_completion"
+        if f.exists():
+            s = f.read_text()
+            if "_ocsh" in s:
+                print("error: _ocsh autocompletion function already found in %s" % f)
+                sys.exit(1)
+        else:
+            s = ""
+        s += Octossh.AUTOCOMPLETION
+        f.write_text(s)
+        print("_ocsh autocompletion function added to %s" % f)
+
     def __init__(self, conf, destination, jumphosts=None, args=None, ssh_options=None):
         if shutil.which('ssh') is None:
             raise self._err("you must install 'ssh'")
@@ -338,17 +352,7 @@ def main():
         ssh_args += "-W {}".format(args.ssh_port_fw)
 
     if args.ocsh_install_autocompletion:
-        f = Path.home() / ".bash_completion"
-        if f.exists():
-            s = f.read_text()
-            if "_ocsh" in s:
-                print("error: _ocsh autocompletion function already found in %s" % f)
-                sys.exit(1)
-        else:
-            s = ""
-        s += Octossh.AUTOCOMPLETION
-        f.write_text(s)
-        print("_ocsh autocompletion function added to %s" % f)
+        Octossh.install_bash_completion()
         sys.exit(0)
 
     if not args.destination:
