@@ -202,11 +202,8 @@ class Octossh(object):
             #    else:
             #        cmd = "{} {}".format(ssh_cmd, ssh_target)
 
-        if args:
-            ssh_cmd = ssh_cmd + ' ' + args
-
         self.ssh_target = ssh_target
-        self.ssh_command = "{} {}".format(ssh_cmd, ssh_target)
+        self.ssh_command = "{} {} {}".format(ssh_cmd, ssh_target, args)
         self.post = post
         self.conf = conf
 
