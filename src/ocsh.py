@@ -338,7 +338,7 @@ def main():
     parser.add_argument('--ocsh-pretend', action='store_true', help="do not actually perform the connection")
     parser.add_argument('--ocsh-examples', action='store_true', help="show example ocsh configuration and commands")
     parser.add_argument('--ocsh-install-autocompletion', action='store_true', help="install bash autocompletion for the current user")
-    parser.add_argument('destination', nargs='?', help='host[action]')
+    parser.add_argument('destination', nargs='?', help='host[action] or regex for multiple hosts')
     parser.add_argument('args', nargs=argparse.REMAINDER, help='any OpenSSH options or remote command')
     args, ssh_options = parser.parse_known_args()
 
@@ -362,9 +362,20 @@ def main():
     logging.basicConfig(level=args.loglevel, format='ocsh: %(message)s')
 
     c = Sshconf(Path(args.ssh_config))
-    o = Octossh(c, args.destination, args.ssh_jump_host, ssh_args, ssh_options)
-    if not args.ocsh_pretend:
-        o.run()
+
+    destinations = list()
+    if '*' in args.destination:
+        for h in c.hosts:
+            if re.match(args.destination, h):
+                destinations.append(h)
+    else:
+        destinations.append(args.destination)
+    for dest in destinations:
+        if len(destinations) > 1:
+            info("destination : %s" % dest)
+        o = Octossh(c, dest, args.ssh_jump_host, ssh_args, ssh_options)
+        if not args.ocsh_pretend:
+            o.run()
 
 if __name__ == "__main__":
     sys.exit(main())
