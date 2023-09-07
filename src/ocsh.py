@@ -4,7 +4,7 @@
 # 2013, Pierre-Olivier Vauboin
 
 DESCRIPTION = "ocsh - SSH password log-in and command automator"
-VERSION = "20230814"
+VERSION = "20230907-5"
 SUMMARY = f"""ocsh automates SSH password login and command execution through annotations on `ssh_config(5)` Hosts:
 * password authentication, reading password from pass[1]:
   - config:  `# ocsh pass <pass-name>`
@@ -216,17 +216,14 @@ class Octossh(object):
             if shutil.which('sshpass') is None:
                 raise self._err("you must install 'sshpass'")
 
-            debug("checking if target server public key is in ssh known_hosts")
-            hostname = subprocess.run(f"ssh -G {self.ssh_target} |grep '^hostname ' |cut -d' ' -f2", shell=True, capture_output=True).stdout.decode().strip()
-            check_res = subprocess.run(["ssh-keygen", "-l", "-F", hostname], capture_output=True)
-            if check_res.returncode == 1:
-                info("adding target server public key to ssh known_hosts")
-                fingerprints = subprocess.run(f"ssh-keyscan {hostname}", shell=True, capture_output=True).stdout.decode().strip()
-                info("Fingerprints:\n%s" % fingerprints)
-                if input("Are you sure you want to continue connecting (yes/no)? ") != "yes":
-                    return
-                with (Path.home() / ".ssh/known_hosts").open("a") as f:
-                    f.write(fingerprints+"\n")
+            stricthostkeychecking = subprocess.run(f"ssh -G {self.ssh_target} |grep '^stricthostkeychecking ' |cut -d' ' -f2", shell=True, capture_output=True).stdout.decode().strip()
+            if stricthostkeychecking == 'yes':
+                debug("checking if target server public key is in ssh known_hosts")
+                hostname = subprocess.run(f"ssh -G {self.ssh_target} |grep '^hostname ' |cut -d' ' -f2", shell=True, capture_output=True).stdout.decode().strip()
+                check_res = subprocess.run(["ssh-keygen", "-l", "-F", hostname], capture_output=True)
+                if check_res.returncode == 1:
+                    # we cannot use ssh-keyscan when a proxy is involved, since ssh-keyscan does not respect ProxyJump / ProxyCommand
+                    self._err("fingerprints of SSH host '%s' not found !\nUse normal ssh(1) to accept the keys, or StrictHostKeyChecking in ssh_config(5)" % self.ssh_target)
 
             debug("setting-up sshpass using named pipe")
             password = subprocess.run(["pass", self.conf['pass']], capture_output=True).stdout.strip()
