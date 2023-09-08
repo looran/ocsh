@@ -4,7 +4,7 @@
 # 2013, Pierre-Olivier Vauboin
 
 DESCRIPTION = "ocsh - SSH password log-in and command automator"
-VERSION = "20230907-5"
+VERSION = "20230908-3"
 SUMMARY = f"""ocsh automates SSH password login and command execution through annotations on `ssh_config(5)` Hosts:
 * password authentication, reading password from pass[1]:
   - config:  `# ocsh pass <pass-name>`
@@ -376,7 +376,7 @@ def main():
         destinations.append(args.destination)
     for dest in destinations:
         if len(destinations) > 1:
-            info("destination : %s" % dest)
+            print("[+] target : %s" % dest)
         o = Octossh(c, dest, args.ssh_jump_host, ssh_args, ssh_options)
         if not args.ocsh_pretend:
             o.run()
