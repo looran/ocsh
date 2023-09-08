@@ -195,6 +195,7 @@ class Octossh(object):
             self.prog += " -F %s" % self.conf.conf_path
 
         ssh_cmd, ssh_target, post, conf = self._get_target_cmd(destination)
+        debug(f"destination={destination} args={args} ssh_cmd={ssh_cmd} ssh_target={ssh_target} post={post} conf={conf}")
 
         # construct imbricated proxycommand SSH commands for all target
         if jumphosts:
