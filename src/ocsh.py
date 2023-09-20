@@ -19,6 +19,8 @@ SUMMARY = f"""ocsh automates SSH password login and command execution through an
   - config:  `# ocsh cmd "<ssh-command>"`
   - config:  `# ocsh pre "<pre-command>"`
   - command: `$ ocsh host`
+* multiple hosts support for command execution:
+  - command: `$ ocsh sshaliasprefix*`
 
 [1] https://www.passwordstore.org/
 

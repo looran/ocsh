@@ -14,6 +14,8 @@ ocsh automates SSH password login and command execution through annotations on `
   - config:  `# ocsh cmd "<ssh-command>"`
   - config:  `# ocsh pre "<pre-command>"`
   - command: `$ ocsh host`
+* multiple hosts support for command execution:
+  - command: `$ ocsh sshaliasprefix*`
 
 [1] https://www.passwordstore.org/
 
@@ -31,7 +33,7 @@ usage: ocsh.py [-h] [--ocsh-verbose] [--ocsh-pretend] [--ocsh-examples]
 ocsh - SSH password log-in and command automator
 
 positional arguments:
-  destination           host[action]
+  destination           host[action] or regex for multiple hosts
   args                  any OpenSSH options or remote command
 
 options:
