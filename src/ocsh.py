@@ -4,7 +4,7 @@
 # 2013, Pierre-Olivier Vauboin
 
 DESCRIPTION = "ocsh - SSH password log-in and command automator"
-VERSION = "20230908-3"
+VERSION = "20230922"
 SUMMARY = f"""ocsh automates SSH password login and command execution through annotations on `ssh_config(5)` Hosts:
 * password authentication, reading password from pass[1]:
   - config:  `# ocsh pass <pass-name>`
@@ -199,6 +199,12 @@ class Octossh(object):
         ssh_cmd, ssh_target, post, conf = self._get_target_cmd(destination)
         debug(f"destination={destination} args={args} ssh_cmd={ssh_cmd} ssh_target={ssh_target} post={post} conf={conf}")
 
+        if len(post.keys()) > 0:
+            if args:
+                raise self._err("cannot use post actions in when command is provided")
+            if not os.isatty(sys.stdout.fileno()):
+                raise self._err("cannot use post actions in non-interactive shell")
+
         # construct imbricated proxycommand SSH commands for all target
         if jumphosts:
             self._err("-J support not implemented")
@@ -263,8 +269,6 @@ class Octossh(object):
         debug("running: %s" % ssh_command)
 
         if len(self.post.keys()) > 0:
-            if not os.isatty(sys.stdout.fileno()):
-                raise self._err("cannot use post actions in non-interactive shell")
             p = pexpect.spawn(ssh_command)
             for action in self.post.keys():
                 cmd, passname = self.post[action]
